@@ -12,6 +12,7 @@ struct LoginView: View {
     @State private var password = "";
     @State private var animateGradient = false;
     @State private var showSuccessAlert = false;
+    @State private var showPassword = false;
     @EnvironmentObject var viewModel: AuthViewModel;
     @Environment(\.dismiss) var dismiss
 
@@ -30,10 +31,22 @@ struct LoginView: View {
                                   title: "Email",
                                   placeholder: "test@test.com")
                             .autocapitalization(.none)
-                        InputView(text: $password,
-                                  title: "Password",
-                                  placeholder: "Your password",
-                                  isSecuredField: true)
+                        ZStack(alignment: .trailing) {
+                            InputView(text: $password,
+                                      title: "Password",
+                                      placeholder: "Your password",
+                                      isSecuredField: !showPassword)
+                            Button {
+                                showPassword.toggle()
+                            } label: {
+                                Image(systemName: showPassword ? "eye" : "eye.slash")
+                                    .imageScale(.small)
+                                    .font(.title2)
+                                    .foregroundColor(Color(.systemGray))
+                                    .padding(.top, 15)
+                                    .padding(.trailing, 10)
+                            }
+                        }
                     }
                     .padding(.top, 20)
                     
@@ -55,6 +68,8 @@ struct LoginView: View {
                     } label: {
                         BigButton(name: "Login")
                     }
+                    .disabled(!formIsValid)
+                    .opacity(formIsValid ? 1.0 : 0.5)
                     Spacer()
                     NavigationLink {
                         SignupView()
@@ -78,6 +93,15 @@ struct LoginView: View {
                
             }
         }
+    }
+}
+
+extension LoginView: AuthFormProtocol {
+    var formIsValid: Bool {
+        return !email.isEmpty
+                && email.contains("@")
+                && !password.isEmpty
+        && password.count > 5
     }
 }
 

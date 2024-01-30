@@ -15,7 +15,9 @@ struct SignupView: View {
     @State private var password = "";
     @State private var animateGradient = false;
     @State private var showSuccessAlert = false;
+    @State private var showPassword = false;
     @EnvironmentObject var viewModel: AuthViewModel;
+    @Environment(\.dismiss) var dismiss
     
     private var fullName: String {
         return "\(firstName) \(lastName)"
@@ -42,19 +44,34 @@ struct SignupView: View {
                                   title: "Email",
                                   placeholder: "test@test.com")
                             .autocapitalization(.none)
-                        InputView(text: $password,
-                                  title: "Password",
-                                  placeholder: "Your password",
-                                  isSecuredField: true)
+                        ZStack(alignment: .trailing) {
+                            InputView(text: $password,
+                                      title: "Password",
+                                      placeholder: "Your password",
+                                      isSecuredField: !showPassword)
+                            Button {
+                                showPassword.toggle()
+                            } label: {
+                                Image(systemName: showPassword ? "eye" : "eye.slash")
+                                    .imageScale(.small)
+                                    .font(.title2)
+                                    .foregroundColor(Color(.systemGray))
+                                    .padding(.top, 15)
+                                    .padding(.trailing, 10)
+                            }
+                        }
                     }.padding(.top, 20)
                     Button {
                         print("SHIT \(viewModel)")
                         Task {
                             try await viewModel.createUser(withEmail: email, password: password, fullName: fullName)
+                            dismiss()
                         }
                     } label: {
                         BigButton(name: "CREATE ACCOUNT")
                     }
+                    .disabled(!formIsValid)
+                    .opacity(formIsValid ? 1.0 : 0.5)
                      
                     Spacer()
                     NavigationLink {
@@ -76,20 +93,21 @@ struct SignupView: View {
     }
 }
 
+extension SignupView: AuthFormProtocol {
+    var formIsValid: Bool {
+        return !email.isEmpty
+                && email.contains("@")
+                && !password.isEmpty
+        && password.count > 5
+        && !firstName.isEmpty
+        && !lastName.isEmpty
+    }
+}
+
 struct SignupView_Previews: PreviewProvider {
     static var previews: some View {
         SignupView()
     }
 }
 
-extension UINavigationController {
-    override open func viewWillLayoutSubviews() {
-        let transparentAppearance = UINavigationBarAppearance()
-        transparentAppearance.configureWithTransparentBackground()
-        transparentAppearance.backgroundColor = .clear
-        transparentAppearance.shadowColor = .clear
-        navigationBar.standardAppearance = transparentAppearance
-        navigationBar.compactAppearance = transparentAppearance
-        navigationBar.scrollEdgeAppearance = transparentAppearance
-    }
-}
+

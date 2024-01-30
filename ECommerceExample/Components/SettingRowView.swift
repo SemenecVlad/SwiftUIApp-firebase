@@ -20,7 +20,7 @@ struct SettingRowView: View {
                 .foregroundColor(tintColor)
             Text(title)
                 .font(.subheadline)
-                .foregroundStyle(.black)
+                .foregroundStyle(.white)
         }
     }
 }
